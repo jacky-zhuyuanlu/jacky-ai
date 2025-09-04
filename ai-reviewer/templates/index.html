@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI代码分析Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #f72585;
+            --dark-color: #2d3748;
+            --light-color: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            max-width: 1000px;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+
+        .header-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-section p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+
+        .upload-section {
+            padding: 3rem 2rem;
+        }
+
+        .upload-card {
+            background: white;
+            border: 2px dashed #e2e8f0;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-card:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-card.dragover {
+            border-color: var(--success-color);
+            background: rgba(6, 214, 160, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .result-section {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner-border {
+            color: var(--primary-color);
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .badge-custom {
+            background: linear-gradient(135deg, var(--success-color), #06a085);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .api-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .api-endpoint {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .method-get { background: var(--success-color); color: white; }
+        .method-post { background: var(--primary-color); color: white; }
+
+        .file-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+            }
+            .header-section {
+                padding: 1.5rem;
+            }
+            .header-section h1 {
+                font-size: 2rem;
+            }
+            .upload-section {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <h1><i class="fas fa-robot"></i> AI代码分析Agent</h1>
+                <p>智能分析代码结构，精准定位功能实现，自动生成测试验证</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <form id="analysisForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <label for="problemDescription" class="form-label">
+                                <i class="fas fa-file-alt"></i> 功能需求描述
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="problemDescription" 
+                                name="problem_description" 
+                                rows="4" 
+                                placeholder="请描述您希望分析的功能需求，例如：实现聊天室GraphQL API，包含创建频道、发送消息、列出消息等功能"
+                                required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-file-archive"></i> 项目代码ZIP文件
+                            </label>
+                            <div class="upload-card" id="uploadCard">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h5>拖拽文件到此处或点击选择</h5>
+                                <p class="text-muted">支持.zip格式，最大50MB</p>
+                                <input type="file" id="codeZip" name="code_zip" accept=".zip" style="display: none;" required>
+                            </div>
+                            <div class="file-info" id="fileInfo">
+                                <i class="fas fa-file-archive text-primary"></i>
+                                <span id="fileName"></span>
+                                <span class="badge badge-custom" id="fileSize"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-cogs"></i> 分析选项
+                            </label>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="includeTests" name="include_tests" checked>
+                                <label class="form-check-label" for="includeTests">
+                                    生成功能验证测试
+                                </label>
+                            </div>
+                            <button type="button" class="btn btn-secondary w-100 mb-2" onclick="loadSampleProject()">
+                                <i class="fas fa-download"></i> 使用示例项目
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search"></i> 开始智能分析
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">分析中...</span>
+                    </div>
+                    <h5 class="mt-3">AI正在分析您的代码...</h5>
+                    <p class="text-muted">这可能需要几分钟时间，请耐心等待</p>
+                </div>
+
+                <!-- Results Section -->
+                <div class="result-section" id="resultSection">
+                    <h4><i class="fas fa-chart-line"></i> 分析结果</h4>
+                    <div id="analysisResults"></div>
+                </div>
+            </div>
+
+            <!-- API Documentation Section -->
+            <div class="api-section">
+                <h4><i class="fas fa-code"></i> API接口文档</h4>
+                
+                <div class="api-endpoint">
+                    <span class="method-badge method-post">POST</span>
+                    <strong>/analyze</strong> - 代码分析接口
+                    <p class="mt-2 mb-0">上传代码ZIP文件和需求描述，获取智能分析报告</p>
+                </div>
+
+                <div class="api-endpoint">
+                    <span class="method-badge method-get">GET</span>
+                    <strong>/health</strong> - 健康检查接口
+                    <p class="mt-2 mb-0">检查服务运行状态</p>
+                </div>
+
+                <div class="api-endpoint">
+                    <span class="method-badge method-get">GET</span>
+                    <strong>/</strong> - API文档和使用说明
+                    <p class="mt-2 mb-0">获取详细的API使用文档</p>
+                </div>
+
+                <div class="mt-4">
+                    <h6>支持的项目类型：</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-primary">GraphQL API</span>
+                        <span class="badge bg-primary">REST API</span>
+                        <span class="badge bg-primary">Node.js</span>
+                        <span class="badge bg-primary">Python</span>
+                        <span class="badge bg-primary">Java</span>
+                        <span class="badge bg-primary">前端应用</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File upload handling
+        const uploadCard = document.getElementById('uploadCard');
+        const fileInput = document.getElementById('codeZip');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+
+        uploadCard.addEventListener('click', () => fileInput.click());
+
+        uploadCard.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadCard.classList.add('dragover');
+        });
+
+        uploadCard.addEventListener('dragleave', () => {
+            uploadCard.classList.remove('dragover');
+        });
+
+        uploadCard.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                showFileInfo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                showFileInfo(e.target.files[0]);
+            }
+        });
+
+        function showFileInfo(file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Form submission
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const includeTests = document.getElementById('includeTests').checked;
+            
+            if (includeTests) {
+                formData.append('include_tests', 'true');
+            }
+
+            // Show loading
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                displayError('分析过程中发生错误: ' + error.message);
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        });
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('analysisResults');
+            let html = '';
+
+            if (data.feature_analysis && data.feature_analysis.length > 0) {
+                html += '<h5><i class="fas fa-search"></i> 功能分析结果</h5>';
+                data.feature_analysis.forEach((feature, index) => {
+                    html += `
+                        <div class="feature-card">
+                            <h6><i class="fas fa-cog"></i> ${feature.feature_description}</h6>
+                            <div class="mt-3">
+                    `;
+                    
+                    feature.implementation_location.forEach(location => {
+                        html += `
+                            <div class="mb-2">
+                                <strong><i class="fas fa-file-code"></i> ${location.file}</strong><br>
+                                <span class="text-muted">函数: ${location.function || 'N/A'}</span>
+                                <span class="badge badge-custom">${location.lines || 'N/A'}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                });
+            }
+
+            if (data.execution_plan_suggestion) {
+                html += `
+                    <div class="feature-card">
+                        <h6><i class="fas fa-play-circle"></i> 执行建议</h6>
+                        <div class="code-block">${data.execution_plan_suggestion}</div>
+                    </div>
+                `;
+            }
+
+            if (data.functional_verification) {
+                html += '<h5><i class="fas fa-flask"></i> 功能验证测试</h5>';
+                
+                if (data.functional_verification.generated_test_code) {
+                    html += `
+                        <div class="feature-card">
+                            <h6><i class="fas fa-code"></i> 生成的测试代码</h6>
+                            <div class="code-block">${escapeHtml(data.functional_verification.generated_test_code)}</div>
+                        </div>
+                    `;
+                }
+
+                if (data.functional_verification.execution_result) {
+                    const result = data.functional_verification.execution_result;
+                    const statusIcon = result.tests_passed ? 'fas fa-check-circle text-success' : 'fas fa-times-circle text-danger';
+                    const statusText = result.tests_passed ? '测试通过' : '测试失败';
+                    
+                    html += `
+                        <div class="feature-card">
+                            <h6><i class="${statusIcon}"></i> 测试执行结果: ${statusText}</h6>
+                            <div class="code-block">${escapeHtml(result.log || '无日志输出')}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = html;
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        function displayError(message) {
+            const resultsDiv = document.getElementById('analysisResults');
+            resultsDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                </div>
+            `;
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load sample project
+        function loadSampleProject() {
+            document.getElementById('problemDescription').value = '实现聊天室GraphQL API，包含创建频道、发送消息、按时间倒序列出频道中的消息等功能';
+            alert('示例需求描述已加载！请上传test_project.zip文件进行测试。');
+        }
+    </script>
+</body>
+</html>

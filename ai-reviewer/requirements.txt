@@ -1,0 +1,8 @@
+flask==3.0.0
+werkzeug==3.0.1
+openai>=1.99.9,<2.0.0
+chardet==5.2.0
+requests==2.31.0
+python-multipart>=0.0.9
+gunicorn==21.2.0
+python-dotenv==1.0.0

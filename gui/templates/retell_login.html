@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>登录 - Retell AI 中文官网仿制版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/index.css">
+    <style>
+        body { background: #f7f8fa; font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; }
+        .login-box { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(79,140,255,0.08); width: 360px; margin: 100px auto; padding: 40px 32px; text-align: center; }
+        .login-title { font-size: 28px; font-weight: bold; color: #4f8cff; margin-bottom: 24px; }
+        .login-input { width: 80%; padding: 12px; border-radius: 8px; border: 1px solid #d0d7e2; margin-bottom: 24px; font-size: 16px; }
+        .login-btn { width: 80%; background: #4f8cff; color: #fff; border: none; border-radius: 8px; padding: 12px 0; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .login-btn:hover { background: #357ae8; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="login-title">登录体验</div>
+        <form method="post" action="/retell/login">
+            <input class="login-input" type="text" name="username" placeholder="请输入用户名" required><br>
+            <button class="login-btn" type="submit">登录</button>
+        </form>
+    </div>
+</body>
+</html> 

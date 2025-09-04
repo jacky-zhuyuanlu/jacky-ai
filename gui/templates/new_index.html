@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>杰克的AI开发平台</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/index.css') }}" />
+  <link rel="icon" href="{{ url_for('static',filename='images/favicon.ico') }}" type="image/x-icon">
+  <script src="{{ url_for('static',filename='js/vue.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/element-ui.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/element/theme-chalk.css') }}" />
+  <script src="{{ url_for('static',filename='js/index.js') }}" defer></script>
+  <script src="{{ url_for('static',filename='js/script.js') }}" defer></script>
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; background: #f7f8fa; }
+    .main_bg {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: flex-end;
+      align-items: stretch;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+    .main_left { display: none !important; }
+    .main_right {
+      width: 100%;
+      max-width: 520px;
+      min-width: 340px;
+      margin: 48px 48px 48px 0;
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: 0 8px 32px rgba(79,140,255,0.10);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      height: calc(100vh - 96px);
+      min-height: 480px;
+    }
+    .ai-avatar {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+    .ai-avatar img {
+      max-width: 110px;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(79,140,255,0.10);
+      background: #f7f8fa;
+    }
+    .top_info {
+      width: 92%;
+      margin: 0 auto 8px auto;
+      font-size: 16px;
+      color: #357ae8;
+      font-weight: bold;
+      text-align: left;
+    }
+    .chatmessage {
+      width: 92%;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      margin: 0 auto 0 auto;
+      padding: 0 0 8px 0;
+      min-height: 180px;
+      max-height: 52vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .message-bubble, .sender-message.message-bubble {
+      border-radius: 18px !important;
+      font-size: 16px;
+      padding: 12px 18px;
+      background: #f2f6fc;
+      color: #222;
+      margin-bottom: 6px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.06);
+      word-break: break-all;
+    }
+    .sender-message.message-bubble {
+      background: #4f8cff;
+      color: #fff;
+    }
+    .message-content { margin-bottom: 8px; }
+    .avatar {
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+    }
+    /* 输入区强制跟随卡片底部 */
+    .main_right .inputmessage {
+      width: 25% !important;
+      margin: 0 auto 24px auto !important;
+      border-radius: 32px !important;
+      box-shadow: 0 2px 8px rgba(79, 140, 255, 0.08) !important;
+      background: #fff !important;
+      padding: 8px 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      box-sizing: border-box !important;
+    }
+    .main_right .inputmessage_voice img {
+      width: 1.8em !important;
+      height: 1.8em !important;
+      min-width: 20px !important;
+      min-height: 20px !important;
+      max-width: 28px !important;
+      max-height: 28px !important;
+      border-radius: 50% !important;
+      background: #f2f6fc !important;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.06) !important;
+      transition: box-shadow 0.2s !important;
+      cursor: pointer !important;
+      object-fit: cover !important;
+    }
+    .main_right .inputmessage_input {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .main_right .inputmessage_input textarea {
+      border-radius: 16px !important;
+      border: 1px solid #e0e7ef !important;
+      padding: 6px 10px !important;
+      font-size: 13px !important;
+      background: #f7f8fa !important;
+      outline: none !important;
+      resize: vertical !important;
+      width: 100% !important;
+      min-height: 28px !important;
+      max-height: 120px !important;
+      line-height: 1.5 !important;
+      transition: border 0.2s !important;
+      box-sizing: border-box !important;
+      word-break: break-all !important;
+    }
+    .main_right .inputmessage_input textarea:focus {
+      border: 1px solid #4f8cff !important;
+      background: #fff !important;
+    }
+    .main_right .inputmessage_send img,
+    .main_right .inputmessage_open img {
+      width: 1.8em !important;
+      height: 1.8em !important;
+      min-width: 20px !important;
+      min-height: 20px !important;
+      max-width: 28px !important;
+      max-height: 28px !important;
+      border-radius: 50% !important;
+      padding: 4px !important;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s !important;
+      cursor: pointer !important;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10) !important;
+      object-fit: cover !important;
+    }
+    .main_right .inputmessage_send img {
+      background: #4f8cff !important;
+    }
+    .main_right .inputmessage_send img:hover {
+      background: #357ae8 !important;
+      transform: scale(1.08) !important;
+      box-shadow: 0 4px 16px rgba(79,140,255,0.18) !important;
+    }
+    .main_right .inputmessage_open img {
+      background: #34c759 !important;
+    }
+    .main_right .inputmessage_open img:hover {
+      background: #28a745 !important;
+      transform: scale(1.08) !important;
+      box-shadow: 0 4px 16px rgba(52,199,89,0.18) !important;
+    }
+    .main_right, .main_right * {
+      font-size: 13px !important;
+    }
+    .top_info, .message-bubble, .sender-message.message-bubble, .message-content, .chatmessage, .ai-avatar, .think-panel, .think-panel * {
+      font-size: 13px !important;
+    }
+    @media (max-width: 900px) {
+      .main_right .inputmessage {
+        width: 90% !important;
+        padding: 6px 4px !important;
+        gap: 6px !important;
+      }
+      .main_right .inputmessage_voice img,
+      .main_right .inputmessage_send img,
+      .main_right .inputmessage_open img {
+        width: 1.2em !important;
+        height: 1.2em !important;
+        min-width: 14px !important;
+        min-height: 14px !important;
+        max-width: 20px !important;
+        max-height: 20px !important;
+        padding: 2px !important;
+      }
+      .main_right, .main_right * {
+        font-size: 12px !important;
+      }
+    }
+    /* dashboard-section 样式提升优先级 */
+    .main_bg .dashboard-section {
+      max-width: 1100px !important;
+      margin: 56px auto 0 auto !important;
+      padding: 0 16px !important;
+    }
+    .main_bg .dashboard-section-title {
+      font-size: 18px !important;
+      font-weight: 700 !important;
+      color: #357ae8 !important;
+      margin-bottom: 28px !important;
+      letter-spacing: 1px !important;
+    }
+    .main_bg .dashboard-cards {
+      display: flex !important;
+      gap: 32px !important;
+      flex-wrap: wrap !important;
+      justify-content: flex-start !important;
+    }
+    .main_bg .dashboard-card {
+      background: #fff !important;
+      border-radius: 20px !important;
+      box-shadow: 0 6px 32px rgba(79,140,255,0.10) !important;
+      padding: 32px 28px !important;
+      min-width: 240px !important;
+      flex: 1 1 300px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 14px !important;
+      align-items: flex-start !important;
+      margin-bottom: 24px !important;
+      border: 2px solid transparent !important;
+      transition: border 0.2s, box-shadow 0.2s !important;
+    }
+    .main_bg .dashboard-card:hover {
+      border: 2px solid #357ae8 !important;
+      box-shadow: 0 8px 32px rgba(53,122,232,0.13) !important;
+    }
+    .main_bg .dashboard-card-title {
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      color: #357ae8 !important;
+      margin-bottom: 6px !important;
+      letter-spacing: 0.5px !important;
+    }
+    .main_bg .dashboard-card-desc {
+      font-size: 14px !important;
+      color: #444 !important;
+      line-height: 1.8 !important;
+    }
+    @media (max-width: 900px) {
+      .main_bg .dashboard-cards { gap: 14px !important; }
+      .main_bg .dashboard-card { padding: 16px 8px !important; min-width: 140px !important; }
+      .main_bg .dashboard-section { margin: 18px auto 0 auto !important; }
+    }
+    @media (max-width: 600px) {
+      .main_bg .dashboard-cards { flex-direction: column !important; gap: 10px !important; }
+      .main_bg .dashboard-card { padding: 8px 2px !important; border-radius: 12px !important; }
+      .main_bg .dashboard-section-title { font-size: 15px !important; margin-bottom: 12px !important; }
+    }
+    .retell-flex-layout {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: flex-end;
+      min-height: 100vh;
+      width: 100vw;
+      background: #f7f8fa;
+    }
+    .dashboard-left {
+      flex: 1 1 0;
+      min-width: 320px;
+      max-width: 700px;
+      padding-top: 48px;
+      padding-left: 32px;
+      padding-right: 16px;
+      box-sizing: border-box;
+    }
+    .main_right {
+      /* 保持你原有 main_right 样式 */
+      margin: 48px 48px 48px 0;
+    }
+    @media (max-width: 1100px) {
+      .dashboard-left { max-width: 400px; padding-left: 8px; }
+      .main_right { margin: 32px 8px 32px 0; }
+    }
+    @media (max-width: 900px) {
+      .retell-flex-layout { flex-direction: column; align-items: center; }
+      .dashboard-left, .main_right { max-width: 98vw; margin: 0 auto; padding: 0; }
+    }
+    .sidebar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .sidebar-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(79,140,255,0.06);
+      padding: 22px 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .sidebar-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #357ae8;
+      margin-bottom: 4px;
+    }
+    .sidebar-card-desc {
+      font-size: 13px;
+      color: #444;
+      line-height: 1.7;
+    }
+    .sidebar-btn {
+      margin-top: 8px;
+      padding: 6px 18px;
+      background: #357ae8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .sidebar-btn:hover {
+      background: #225bb5;
+    }
+    @media (max-width: 900px) {
+      .sidebar-group { gap: 12px; }
+      .sidebar-card { padding: 12px 6px; }
+    }
+    .sidebar-info-card {
+      background: #f8faff;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(79,140,255,0.04);
+      padding: 22px 18px 18px 18px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-info-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #357ae8;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .sidebar-info-row {
+      font-size: 13px;
+      color: #444;
+      line-height: 1.7;
+      display: flex;
+      gap: 8px;
+    }
+    .sidebar-info-row span {
+      color: #888;
+      min-width: 60px;
+      display: inline-block;
+    }
+    .sidebar-info-row b {
+      color: #225bb5;
+      font-weight: 600;
+    }
+    .sidebar-process-card {
+      background: #f8faff;
+      border-radius: 20px;
+      box-shadow: 0 2px 16px rgba(79,140,255,0.06);
+      padding: 28px 22px 18px 22px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sidebar-process-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #225bb5;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .sidebar-process-desc {
+      font-size: 14px;
+      color: #6b7a90;
+      margin-bottom: 10px;
+    }
+    .sidebar-process-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-process-item {
+      font-size: 15px;
+      color: #357ae8;
+      background: #eaf2ff;
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar-process-item.active {
+      background: linear-gradient(90deg, #4f8cff 0%, #6fd6ff 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+    }
+    .sidebar-btn {
+      margin-top: 10px;
+      padding: 8px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(90deg, #4f8cff 0%, #6fd6ff 100%);
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .sidebar-btn:hover {
+      background: linear-gradient(90deg, #357ae8 0%, #4f8cff 100%);
+      box-shadow: 0 4px 16px rgba(79,140,255,0.18);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .sidebar-btn-process {
+      width: 100%;
+      margin-top: 14px;
+      font-size: 15px;
+      padding: 10px 0;
+      border-radius: 16px;
+    }
+    .sidebar-info-card {
+      background: #f8faff;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(79,140,255,0.04);
+      padding: 22px 18px 18px 18px;
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-info-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #357ae8;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .sidebar-info-row {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.7;
+      display: flex;
+      gap: 8px;
+    }
+    .sidebar-info-row span {
+      color: #888;
+      min-width: 60px;
+      display: inline-block;
+    }
+    .sidebar-info-row b {
+      color: #225bb5;
+      font-weight: 600;
+    }
+    .sidebar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+    .sidebar-card {
+      background: #f8faff;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.06);
+      padding: 18px 18px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #225bb5;
+      margin-bottom: 2px;
+    }
+    .sidebar-card-desc {
+      font-size: 13px;
+      color: #6b7a90;
+      margin-bottom: 4px;
+    }
+    @media (max-width: 1200px) {
+      .dashboard-left, .retell-main { min-width: 260px; max-width: 420px; }
+      .main_right { min-width: 320px; }
+    }
+    @media (max-width: 900px) {
+      .dashboard-left, .retell-main { min-width: 180px; max-width: 100vw; padding-left: 6px; padding-right: 6px; }
+      .main_right { min-width: 180px; }
+      .sidebar-process-title, .sidebar-info-title, .sidebar-card-title { font-size: 15px; }
+      .sidebar-info-row, .sidebar-card-desc, .sidebar-process-desc, .sidebar-process-item { font-size: 12px; }
+      .sidebar-btn, .sidebar-btn-process { font-size: 12px; }
+    }
+    body, html {
+      background: #f9fbfd !important;
+    }
+    .dashboard-left {
+      min-width: 340px;
+      max-width: 420px;
+      padding-top: 40px;
+      padding-left: 36px;
+      padding-right: 18px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .retell-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px rgba(79,140,255,0.10), 0 1.5px 4px rgba(79,140,255,0.04);
+      margin-bottom: 0;
+      padding: 28px 28px 20px 28px;
+      margin-top: 0;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1.5px solid #f2f6fc;
+    }
+    .retell-divider {
+      height: 28px;
+      width: 100%;
+      background: transparent;
+    }
+    .sidebar-process-card {
+      margin-bottom: 0;
+      box-shadow: 0 4px 32px rgba(79,140,255,0.10), 0 1.5px 4px rgba(79,140,255,0.04);
+      border: 1.5px solid #f2f6fc;
+    }
+    .sidebar-process-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1a2b4c;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .sidebar-process-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .sidebar-process-item {
+      font-size: 15px;
+      color: #357ae8;
+      background: #f3f7ff;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      border: 1px solid #eaf2ff;
+    }
+    .sidebar-process-item.active {
+      background: linear-gradient(90deg, #4f8cff 0%, #6fd6ff 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+      border: none;
+    }
+    .retell-btn {
+      margin-top: 10px;
+      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(90deg, #4f8cff 0%, #6fd6ff 100%);
+      border: none;
+      border-radius: 22px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+      width: 100%;
+      letter-spacing: 1px;
+    }
+    .retell-btn:hover {
+      background: linear-gradient(90deg, #357ae8 0%, #4f8cff 100%);
+      box-shadow: 0 6px 24px rgba(79,140,255,0.18);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .sidebar-info-card {
+      margin-bottom: 0;
+    }
+    .sidebar-info-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #357ae8;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .sidebar-info-row {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.7;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .sidebar-info-row span {
+      color: #8A94A6;
+      min-width: 68px;
+      display: inline-block;
+      font-weight: 500;
+    }
+    .sidebar-info-row b {
+      color: #225bb5;
+      font-weight: 700;
+    }
+    .sidebar-group {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 0;
+    }
+    .sidebar-card {
+      padding: 18px 18px 14px 18px;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+    .sidebar-card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1a2b4c;
+      margin-bottom: 2px;
+    }
+    .sidebar-card-desc {
+      font-size: 13px;
+      color: #8A94A6;
+      margin-bottom: 4px;
+      font-weight: 400;
+    }
+    .dashboard-section {
+      margin-bottom: 0;
+      padding: 24px 24px 16px 24px;
+    }
+    .dashboard-section-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #1a2b4c;
+      margin-bottom: 12px;
+    }
+    .dashboard-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dashboard-card {
+      background: #f7faff;
+      border-radius: 12px;
+      box-shadow: 0 1.5px 4px rgba(79,140,255,0.04);
+      padding: 14px 18px 10px 18px;
+      margin-bottom: 0;
+    }
+    .dashboard-card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #225bb5;
+      margin-bottom: 2px;
+    }
+    .dashboard-card-desc {
+      font-size: 13px;
+      color: #8A94A6;
+      font-weight: 400;
+    }
+    @media (max-width: 1200px) {
+      .dashboard-left { min-width: 220px; max-width: 340px; padding-left: 8px; padding-right: 8px; }
+      .main_right { min-width: 320px; }
+      .retell-card { padding: 18px 10px 12px 10px; }
+    }
+    @media (max-width: 900px) {
+      .dashboard-left { min-width: 120px; max-width: 100vw; padding-left: 2px; padding-right: 2px; }
+      .main_right { min-width: 180px; }
+      .sidebar-process-title, .sidebar-info-title, .sidebar-card-title, .dashboard-section-title { font-size: 14px; }
+      .sidebar-info-row, .sidebar-card-desc, .sidebar-process-item, .dashboard-card-title, .dashboard-card-desc { font-size: 11px; }
+      .retell-btn { font-size: 11px; }
+    }
+    .retell-root-flex {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      height: 100vh;
+      width: 100vw;
+      background: #f7f8fa;
+    }
+    .fill-flex { height: 100%; display: flex; flex-direction: column; }
+    .fill-flex-group { flex: 1 1 0; display: flex; flex-direction: column; gap: 32px; }
+    .fill-flex-card { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; }
+    .dashboard-left {
+      min-width: 340px;
+      max-width: 420px;
+      height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      padding: 0 0 0 0;
+    }
+    .sidebar-content {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 40px 18px 24px 36px;
+      gap: 0;
+    }
+    .sidebar-fill {
+      flex: 1 1 auto;
+    }
+    .retell-main {
+      flex: 1 1 0;
+      min-width: 320px;
+      max-width: 700px;
+      height: 100vh;
+      padding: 48px 32px 24px 32px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      background: transparent;
+    }
+    .retell-cards-fill {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      justify-content: stretch;
+    }
+    .retell-card, .fill-flex-card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 6px 32px rgba(0,0,0,0.07), 0 1.5px 4px rgba(0,0,0,0.03);
+      border: 1.5px solid #f2f2f2;
+      padding: 32px 32px 24px 32px;
+      gap: 18px;
+      margin-bottom: 0;
+      transition: box-shadow 0.2s;
+    }
+    .retell-card:hover, .fill-flex-card:hover {
+      box-shadow: 0 12px 48px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .dashboard-card-title, .sidebar-card-title, .sidebar-info-title, .sidebar-process-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #181818;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .dashboard-card-desc, .sidebar-card-desc, .sidebar-info-row, .qa-item-card {
+      font-size: 15px;
+      color: #444;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+    /* 用户信息卡片样式 */
+    .sidebar-user-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding-bottom: 18px;
+    }
+    .user-avatar-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .user-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      background: #f7f8fa;
+    }
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .user-name {
+      font-size: 18px;
+      font-weight: 900;
+      color: #181818;
+    }
+    .user-role {
+      font-size: 13px;
+      color: #888;
+      font-weight: 500;
+    }
+    .user-meta-row {
+      font-size: 13px;
+      color: #444;
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+    .user-meta-row span { color: #888; min-width: 60px; display: inline-block; }
+    .user-meta-row b { color: #181818; font-weight: 700; }
+    /* 高级黑白下拉框 */
+    .retell-select.retell-select-adv {
+      width: 100%;
+      padding: 16px 22px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #181818;
+      background: #fff;
+      border: none;
+      border-radius: 22px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      outline: none;
+      margin-bottom: 8px;
+      appearance: none;
+      transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+    }
+    .retell-select.retell-select-adv:focus, .retell-select.retell-select-adv:hover {
+      background: #181818;
+      color: #fff;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    }
+    .retell-select-action {
+      background: #181818;
+      color: #fff;
+      font-weight: 900;
+      margin-top: 8px;
+    }
+    .retell-select-action:focus, .retell-select-action:hover {
+      background: #222;
+      color: #fff;
+    }
+    .main_right {
+      width: 100%;
+      max-width: 520px;
+      min-width: 340px;
+      margin: 48px 48px 48px 0;
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      height: calc(100vh - 96px);
+      min-height: 480px;
+    }
+    .qa-list-card {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .qa-item-card {
+      background: #f7f8fa;
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: #222;
+      font-size: 15px;
+      font-weight: 400;
+      border: 1px solid #f2f2f2;
+      box-shadow: 0 1.5px 4px rgba(0,0,0,0.03);
+    }
+    @media (max-width: 1200px) {
+      .dashboard-left { min-width: 220px; max-width: 340px; }
+      .retell-main { min-width: 180px; max-width: 100vw; padding-left: 6px; padding-right: 6px; }
+      .main_right { min-width: 320px; }
+      .retell-card, .fill-flex-card { padding: 18px 10px 12px 10px; }
+    }
+    @media (max-width: 900px) {
+      .dashboard-left { min-width: 120px; max-width: 100vw; padding-left: 2px; padding-right: 2px; }
+      .retell-main { min-width: 120px; max-width: 100vw; padding-left: 2px; padding-right: 2px; }
+      .main_right { min-width: 180px; }
+      .dashboard-card-title, .sidebar-card-title, .sidebar-info-title, .sidebar-process-title { font-size: 14px; }
+      .dashboard-card-desc, .sidebar-card-desc, .sidebar-info-row, .qa-item-card { font-size: 11px; }
+    }
+    .retell-root-flex {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      height: 100vh;
+      width: 100vw;
+      background: #f7f8fa;
+    }
+    .dashboard-left {
+      min-width: 300px;
+      max-width: 340px;
+      height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      padding: 36px 0 18px 28px;
+      border-right: 1.5px solid #f2f2f2;
+      align-items: flex-start;
+    }
+    .sidebar-header-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .sidebar-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+    }
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #357ae8;
+      letter-spacing: 1px;
+    }
+    .sidebar-avatar-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .sidebar-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      background: #f7f8fa;
+      border: 2px solid #fff;
+    }
+    .sidebar-user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .sidebar-user-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #181818;
+    }
+    .sidebar-user-role {
+      font-size: 12px;
+      color: #888;
+      font-weight: 500;
+    }
+    .sidebar-user-meta {
+      font-size: 12px;
+      color: #444;
+    }
+    .sidebar-section-divider.thin {
+      height: 1px;
+      width: 90%;
+      background: #f2f2f2;
+      margin: 12px 0 12px 0;
+      border-radius: 1px;
+    }
+    .sidebar-section-title.small {
+      font-size: 13px;
+      color: #8a94a6;
+      font-weight: 700;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+      width: 90%;
+      text-align: left;
+    }
+    .sidebar-info-list {
+      width: 90%;
+      margin-bottom: 4px;
+    }
+    .sidebar-info-row {
+      font-size: 14px;
+      color: #444;
+      font-weight: 400;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.7;
+    }
+    .sidebar-info-row span { color: #888; min-width: 60px; display: inline-block; font-weight: 500; }
+    .sidebar-info-row b, .sidebar-info-blue { color: #357ae8; font-weight: 700; }
+    .sidebar-footer-row.small {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      opacity: 0.5;
+    }
+    .sidebar-footer-img {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+    .sidebar-footer-text {
+      font-size: 11px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="main_bg">
+    <div class="retell-root-flex">
+      <!-- 左侧 Sidebar -->
+      <aside class="dashboard-left">
+{#        <div class="sidebar-header-row">#}
+{#          <img class="sidebar-logo" src="/static/images/Logo.png" alt="logo">#}
+{#          <span class="sidebar-title">杰克的AI开发平台</span>#}
+{#        </div>#}
+        <div class="sidebar-avatar-block">
+          <img class="sidebar-avatar" src="/static/images/Logo.png" alt="avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Jacky</div>
+            <div class="sidebar-user-role">AI超级管理员</div>
+            <div class="sidebar-user-meta">jacky@example.com</div>
+            <div class="sidebar-user-meta">上次登录：2025-07-22 16:58</div>
+          </div>
+        </div>
+        <div class="sidebar-section-divider thin"></div>
+        <div class="sidebar-section-title small">系统信息</div>
+        <div class="sidebar-info-list">
+          <div class="sidebar-info-row"><span>大模型：</span><b class="sidebar-info-blue">{{ system_conf.gpt_model_engine or '未配置' }}</b></div>
+          <div class="sidebar-info-row"><span>ASR：</span><b class="sidebar-info-blue">{{ system_conf.ASR_mode or '未配置' }}</b></div>
+          <div class="sidebar-info-row"><span>TTS：</span><b class="sidebar-info-blue">{{ system_conf.tts_module or '未配置' }}</b></div>
+        </div>
+        <div class="sidebar-section-divider thin"></div>
+        <div class="sidebar-section-title small">管理</div>
+        <div class="sidebar-info-list">
+          <div class="sidebar-info-row"><span>人设：</span><span class="sidebar-info-blue">默认人设</span></div>
+          <div class="sidebar-info-row"><span>API Key：</span><span class="sidebar-info-blue">已配置</span></div>
+        </div>
+        <div class="sidebar-section-divider thin"></div>
+        <div class="sidebar-section-title small">设置</div>
+        <div class="sidebar-info-list">
+          <div class="sidebar-info-row"><span>情绪分析：</span><span class="sidebar-info-blue">关闭</span></div>
+          <div class="sidebar-info-row"><span>代理：</span><span class="sidebar-info-blue">不使用代理</span></div>
+        </div>
+        <div class="sidebar-footer-row small">
+          <img class="sidebar-footer-img" src="/static/images/favicon.ico" alt="footer">
+          <span class="sidebar-footer-text">© 2025 Jacky AI</span>
+        </div>
+      </aside>
+      <!-- 中间主内容区 -->
+      <main class="retell-main">
+        <!-- 系统配置卡片 -->
+        <div class="dashboard-card retell-card">
+          <div class="dashboard-card-title">系统配置</div>
+          <form class="config-form">
+            <div class="config-group">
+              <label class="config-label">大模型：</label>
+              <select class="config-select" name="gpt_model_engine">
+                <option value="deepseek-chat" {% if system_conf.gpt_model_engine == 'deepseek-chat' %}selected{% endif %}>deepseek-chat</option>
+                <option value="qwen-plus" {% if system_conf.gpt_model_engine == 'qwen-plus' %}selected{% endif %}>qwen-plus</option>
+                <option value="gpt-3.5-turbo" {% if system_conf.gpt_model_engine == 'gpt-3.5-turbo' %}selected{% endif %}>gpt-3.5-turbo</option>
+              </select>
+            </div>
+            <div class="config-group">
+              <label class="config-label">ASR：</label>
+              <select class="config-select" name="ASR_mode">
+                <option value="ali" {% if system_conf.ASR_mode == 'ali' %}selected{% endif %}>ali</option>
+                <option value="funasr" {% if system_conf.ASR_mode == 'funasr' %}selected{% endif %}>funasr</option>
+                <option value="sensevoice" {% if system_conf.ASR_mode == 'sensevoice' %}selected{% endif %}>sensevoice</option>
+              </select>
+            </div>
+            <div class="config-group">
+              <label class="config-label">TTS：</label>
+              <select class="config-select" name="tts_module">
+                <option value="ali" {% if system_conf.tts_module == 'ali' %}selected{% endif %}>ali</option>
+                <option value="azure" {% if system_conf.tts_module == 'azure' %}selected{% endif %}>azure</option>
+                <option value="gptsovits" {% if system_conf.tts_module == 'gptsovits' %}selected{% endif %}>gptsovits</option>
+                <option value="volcano" {% if system_conf.tts_module == 'volcano' %}selected{% endif %}>volcano</option>
+                <option value="gptsovits_v3" {% if system_conf.tts_module == 'gptsovits_v3' %}selected{% endif %}>gptsovits_v3</option>
+              </select>
+            </div>
+            <div class="config-group">
+              <label class="config-label">情绪分析：</label>
+              <select class="config-select" name="ltp_mode">
+                <option value="baidu" {% if system_conf.ltp_mode == 'baidu' %}selected{% endif %}>baidu</option>
+                <option value="cemotion" {% if system_conf.ltp_mode == 'cemotion' %}selected{% endif %}>cemotion</option>
+              </select>
+            </div>
+            <div class="config-group">
+              <label class="config-label">API Key：</label>
+              <input class="config-input" type="password" name="gpt_api_key" value="{{ system_conf.gpt_api_key or '' }}" placeholder="请输入API Key" />
+            </div>
+            <div class="config-group">
+              <label class="config-label">代理：</label>
+              <input class="config-input" name="proxy_config" value="{{ system_conf.proxy_config or '' }}" placeholder="如127.0.0.1:7890" />
+            </div>
+            <button class="retell-btn" type="submit">保存配置</button>
+          </form>
+        </div>
+        <!-- 提示词工程卡片，动态渲染 interview_questions -->
+        <div class="dashboard-card retell-card">
+          <div class="dashboard-card-title">提示词工程</div>
+          <div class="qa-list qa-list-card">
+            {% set questions = dynamic_data.interview_questions %}
+            {% if questions %}
+              {% for q in questions %}
+                <div class="qa-item-card"><span class="qa-q">Q:</span> <b>{{ q.question }}</b></div>
+              {% endfor %}
+            {% else %}
+              <div class="qa-item-card">暂无提示词</div>
+            {% endif %}
+          </div>
+          <div class="main-section-btn main-section-upload">上传Q&A文件</div>
+          <div class="qa-extra-block">
+            <div class="qa-extra-row">
+              <span class="qa-extra-label">Q&A文件：</span>
+              <span class="qa-extra-value">{{ QnA or '未上传' }}</span>
+              <button class="qa-extra-btn">更换/上传</button>
+            </div>
+            <div class="qa-extra-row qa-extra-row-mt">
+              <span class="qa-extra-label">补充：</span>
+              <span class="qa-extra-value qa-extra-value-multiline">{{ attribute_additional or '暂无补充说明' }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- 日志与监控卡片 -->
+        <div class="dashboard-card retell-card">
+          <div class="dashboard-card-title">日志与监控</div>
+          <div class="main-section-btn main-section-log">查看日志</div>
+        </div>
+      </main>
+      <!-- 右侧 AI 区域 -->
+      <section class="main_right">
+        <!-- 保持原 main_right 语音交互区内容不变 -->
+        <div class="ai-avatar">
+          <img :src="robot" alt="AI动画">
+        </div>
+        <div class="top_info">
+          <span class="top_info_text">消息：</span>[[panelMsg]]
+        </div>
+        <div class="chatmessage">
+          <div class="chat-container" id="user0">
+            <div v-for="(item, index) in messages" :key="index">
+              <div class="message receiver-message" v-if="item.type == 'fay'">
+                <img class="avatar" src="{{ url_for('static',filename='images/Fay_send.png') }}" alt="接收者头像">
+                <div class="message-content">
+                  <div class="message-bubble">[[item.content]]</div>
+                  <div class="message-time">
+                    <span class="what-time">[[item.timetext]]</span>
+                    <div v-if="item.is_adopted == 0" class="adopt-button" @click="adoptText(item.id)">
+                      <img src="{{ url_for('static',filename='images/adopt.png') }}" alt="采纳图标" class="adopt-img" />
+                    </div>
+                    <div v-else class="adopt-button">
+                      <img src="{{ url_for('static',filename='images/adopted.png') }}" alt="采纳图标" class="adopt-img" />
+                    </div>
+                  </div>
+                </div>
+              </div>     
+              <div class="message sender-message" v-else>
+                <div class="message-content">
+                  <div class="sender-message message-bubble">[[item.content]]</div>
+                  <div class="sender-message-time">[[item.timetext]]</div>
+                </div>
+                <img class="avatar" src="{{ url_for('static',filename='images/User_send.png') }}" alt="发送者头像">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="inputmessage">
+          <div class="inputmessage_voice">
+            <img v-if="!source_record_enabled" src="{{ url_for('static',filename='images/recording.png') }}" alt="" @click="changeRecord()">
+            <img v-else src="{{ url_for('static',filename='images/record.png') }}" alt="" @click="changeRecord()">
+          </div>
+          <div class="inputmessage_input">
+            <textarea class="text_in" placeholder="请输入内容" v-model="newMessage" @keyup.enter="sendMessage" style="padding-top: 13px;"></textarea>
+          </div>
+          <div class="inputmessage_send">
+            <img src="{{ url_for('static',filename='images/send.png') }}" alt="发送信息" @click="sendMessage">
+          </div>
+          <div v-if="liveState == 1" class="inputmessage_open">
+            <img v-if="!play_sound_enabled" src="{{ url_for('static',filename='images/sound_off.png') }}" @click="changeSound()">
+            <img v-else src="{{ url_for('static',filename='images/sound_on.png') }}" @click="changeSound()">
+          </div>
+          <div v-else class="inputmessage_open">
+            <img src="{{ url_for('static',filename='images/open.png') }}" @click="startLive()">
+          </div>
+        </div>
+        <div class="think-panel-container" v-show="thinkContent">
+          <div class="think-panel">
+            <div class="think-panel-header">
+              <h4>思考内容</h4>
+              <button class="think-panel-minimize" @click="minimizeThinkPanel">
+                <span class="think-panel-icon" v-if="isThinkPanelMinimized">+</span>
+                <span class="think-panel-icon" v-else>-</span>
+              </button>
+            </div>
+            <p>[[thinkContent]]</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof app !== 'undefined') {
+        app.thinkContent = "";
+      }
+    });
+  </script>
+</body>
+</html> 
